@@ -18,7 +18,7 @@ const Login = () => {
     setAlert(null);
 
     try {
-      const res = await axios.post('http://137.184.13.6:5000/login', {
+      const res = await axios.post('https://api.alexisandresuriel.com/login', {
         correo_usuario: email,
         pass_usuario: password,
       });

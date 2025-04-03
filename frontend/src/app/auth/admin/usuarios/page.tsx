@@ -27,7 +27,7 @@ const Usuarios = () => {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await axios.get('http://137.184.13.6:5000/usuarios');
+      const res = await axios.get('https://api.alexisandresuriel.com/usuarios');
       setUsuarios(res.data);
       setFilteredUsuarios(res.data);
       setLoading(false);
@@ -60,7 +60,7 @@ const Usuarios = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://137.184.13.6:5000/usuarios/${id_usuario}`);
+          await axios.delete(`https://api.alexisandresuriel.com/usuarios/${id_usuario}`);
           Swal.fire('Eliminado', 'El usuario ha sido eliminado.', 'success');
           fetchUsuarios();
         } catch (error) {
@@ -92,7 +92,7 @@ const Usuarios = () => {
 
     if (formValues) {
       try {
-        await axios.post('http://137.184.13.6:5000/usuarios', formValues);
+        await axios.post('https://api.alexisandresuriel.com/usuarios', formValues);
         Swal.fire('Éxito', 'Usuario añadido correctamente', 'success');
         fetchUsuarios();
       } catch (error) {
@@ -121,7 +121,7 @@ const Usuarios = () => {
 
     if (formValues) {
       try {
-        await axios.put(`http://137.184.13.6:5000/usuarios/${usuario.id_usuario}`, formValues);
+        await axios.put(`https://api.alexisandresuriel.com/usuarios/${usuario.id_usuario}`, formValues);
         Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
         fetchUsuarios();
       } catch (error) {

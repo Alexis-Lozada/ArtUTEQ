@@ -21,7 +21,7 @@ const AdminDashboard = () => {
       }
 
       try {
-        const res = await axios.get('http://137.184.13.6:5000/profile', {
+        const res = await axios.get('https://api.alexisandresuriel.com/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
