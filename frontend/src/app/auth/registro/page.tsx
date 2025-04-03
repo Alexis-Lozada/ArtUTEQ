@@ -52,7 +52,7 @@ const Registro = () => {
     };
 
     try {
-      await axios.post('http://localhost:5000/register', newUser, {
+      await axios.post('http://137.184.13.6:5000/register', newUser, {
         headers: { 'Content-Type': 'application/json' },
       });
 
