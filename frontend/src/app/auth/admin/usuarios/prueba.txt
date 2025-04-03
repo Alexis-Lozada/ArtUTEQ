@@ -1,0 +1,168 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import AdminNavbar from '@/components/ui/AdminNavbar';
+import { useRouter } from 'next/navigation';
+import { FaEdit, FaTrash, FaUserPlus, FaArrowLeft, FaFilePdf, FaSearch } from 'react-icons/fa';
+
+const Usuarios = () => {
+  const [usuarios, setUsuarios] = useState([]);
+  const [filteredUsuarios, setFilteredUsuarios] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchUsuarios();
+  }, []);
+
+  // ✅ Obtener usuarios desde el backend
+  const fetchUsuarios = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/usuarios');
+      setUsuarios(res.data);
+      setFilteredUsuarios(res.data); // Inicializa con todos los usuarios
+      setLoading(false);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      setLoading(false);
+    }
+  };
+
+  // ✅ Función para filtrar usuarios en tiempo real
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+
+    const filtered = usuarios.filter((usuario: any) =>
+      usuario.nom_usuario.toLowerCase().includes(e.target.value.toLowerCase()) ||
+      usuario.correo_usuario.toLowerCase().includes(e.target.value.toLowerCase()) ||
+      usuario.rol_usuario.toLowerCase().includes(e.target.value.toLowerCase())
+    );
+
+    setFilteredUsuarios(filtered);
+  };
+
+  // ✅ Eliminar usuario en el backend
+  const handleDelete = async (id_usuario: number) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'No podrás recuperar este usuario.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`http://localhost:5000/usuarios/${id_usuario}`);
+          Swal.fire('Eliminado', 'El usuario ha sido eliminado.', 'success');
+          fetchUsuarios();
+        } catch (error) {
+          Swal.fire('Error', 'No se pudo eliminar el usuario.', 'error');
+        }
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <AdminNavbar />
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex space-x-4">
+            {/* 🔙 Botón de Regresar */}
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center space-x-2 hover:bg-gray-600"
+              onClick={() => router.push('/auth/dashboard')}
+            >
+              <FaArrowLeft className="text-lg" />
+              <span>Regresar</span>
+            </button>
+
+            {/* 📄 Botón de Generar PDF (Aún sin funcionalidad) */}
+            <button className="bg-red-600 text-white px-4 py-2 rounded flex items-center space-x-2 hover:bg-red-700">
+              <FaFilePdf className="text-lg" />
+              <span>Generar PDF</span>
+            </button>
+
+            {/* ➕ Botón para añadir usuario */}
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded flex items-center space-x-2 hover:bg-green-600"
+              onClick={() => Swal.fire('Añadir usuario', 'Aquí irá el formulario', 'info')}
+            >
+              <FaUserPlus className="text-lg" />
+              <span>Añadir Usuario</span>
+            </button>
+          </div>
+
+          {/* 🔍 Barra de búsqueda */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar usuario..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="px-4 py-2 border rounded-lg shadow-md w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <FaSearch className="absolute right-3 top-3 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Tabla de usuarios */}
+        {loading ? (
+          <p className="text-center">Cargando usuarios...</p>
+        ) : (
+          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+            <table className="w-full table-auto">
+              <thead className="bg-gray-800 text-white">
+                <tr>
+                  <th className="py-2 px-4">ID</th>
+                  <th className="py-2 px-4">Nombre</th>
+                  <th className="py-2 px-4">Correo</th>
+                  <th className="py-2 px-4">Rol</th>
+                  <th className="py-2 px-4">Estado</th>
+                  <th className="py-2 px-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsuarios.map((usuario: any) => (
+                  <tr key={usuario.id_usuario} className="border-b text-center">
+                    <td className="py-2 px-4">{usuario.id_usuario}</td>
+                    <td className="py-2 px-4">{usuario.nom_usuario}</td>
+                    <td className="py-2 px-4">{usuario.correo_usuario}</td>
+                    <td className="py-2 px-4">{usuario.rol_usuario}</td>
+                    <td className="py-2 px-4">
+                      <span className={`px-3 py-1 rounded-full text-white text-sm ${
+                        usuario.estado_usuario === 'activo' ? 'bg-green-500' : 'bg-red-500'
+                      }`}>
+                        {usuario.estado_usuario}
+                      </span>
+                    </td>
+                    <td className="py-2 px-4 flex justify-center space-x-3">
+                      <button
+                        className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600"
+                        onClick={() => Swal.fire('Editar usuario', 'Aquí irá el modal de edición', 'info')}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
+                        onClick={() => handleDelete(usuario.id_usuario)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Usuarios;

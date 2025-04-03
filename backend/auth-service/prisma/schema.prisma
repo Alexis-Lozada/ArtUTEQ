@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario    Int    @id @default(autoincrement())
+  nom_usuario   String @unique
+  correo_usuario String @unique
+  pass_usuario   String
+  rol_usuario    String
+  estado_usuario String
+
+  sesiones       Sesion[]
+  notificaciones Notificacion[]
+  reportes       Reporte[]
+}
+
+model Sesion {
+  id_sesion        Int    @id @default(autoincrement())
+  id_usuario       Int
+  token            String
+  fecha_creacion   DateTime
+  fecha_expiracion DateTime
+
+  usuario          Usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+}
+
+model Notificacion {
+  id_notificacion     Int     @id @default(autoincrement())
+  id_usuario         Int
+  estatus_notificacion Boolean
+
+  usuario            Usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+}
+
+model Prediccion {
+  id_prediccion     Int    @id @default(autoincrement())
+  municipio         String
+  fecha            DateTime
+  casos_activos    Int
+  casos_acumulados Int
+  estado_usuario   String
+
+  reportes         Reporte[]
+}
+
+model Reporte {
+  id_reporte       Int    @id @default(autoincrement())
+  id_prediccion    Int
+  id_usuario      Int
+  tipo_reporte     String
+  fecha_generacion DateTime
+
+  prediccion       Prediccion @relation(fields: [id_prediccion], references: [id_prediccion], onDelete: Cascade)
+  usuario         Usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+}
+
+model DatosCrudos {
+  id_dcrudos       Int    @id @default(autoincrement())
+  fecha_importacion DateTime
+  fuente           String
+  url_origen       String
+  formato_origen   String
+
+  datosProcesados DatosProcesados[]
+}
+
+model DatosProcesados {
+  id_dprocesados   Int    @id @default(autoincrement())
+  id_dcrudos      Int
+  fecha_procesamiento DateTime
+  municipio        String
+  casos_confirmados Int
+  casos_activos   Int
+
+  datosCrudos     DatosCrudos @relation(fields: [id_dcrudos], references: [id_dcrudos], onDelete: Cascade)
+}
