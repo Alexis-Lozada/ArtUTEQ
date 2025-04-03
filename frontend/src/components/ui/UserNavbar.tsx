@@ -17,7 +17,7 @@ const UserNavbar = () => {
       if (!token) return router.push('/auth/login');
 
       try {
-        const res = await axios.get('http://localhost:5000/profile', {
+        const res = await axios.get('https://api.alexisandresuriel.com/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
