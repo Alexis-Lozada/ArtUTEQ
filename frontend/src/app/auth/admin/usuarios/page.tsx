@@ -14,6 +14,8 @@ import {
   FaSearch,
 } from 'react-icons/fa';
 
+const API_URL = 'https://api.alexisandresuriel.com';
+
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ const Usuarios = () => {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await axios.get('https://api.alexisandresuriel.com/usuarios');
+      const res = await axios.get(`${API_URL}/usuarios`);
       setUsuarios(res.data);
       setFilteredUsuarios(res.data);
       setLoading(false);
@@ -38,14 +40,13 @@ const Usuarios = () => {
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
     const filtered = usuarios.filter((usuario: any) =>
-      usuario.nom_usuario.toLowerCase().includes(e.target.value.toLowerCase()) ||
-      usuario.correo_usuario.toLowerCase().includes(e.target.value.toLowerCase()) ||
-      usuario.rol_usuario.toLowerCase().includes(e.target.value.toLowerCase())
+      usuario.nom_usuario.toLowerCase().includes(term) ||
+      usuario.correo_usuario.toLowerCase().includes(term) ||
+      usuario.rol_usuario.toLowerCase().includes(term)
     );
-
     setFilteredUsuarios(filtered);
   };
 
@@ -60,7 +61,7 @@ const Usuarios = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`https://api.alexisandresuriel.com/usuarios/${id_usuario}`);
+          await axios.delete(`${API_URL}/usuarios/${id_usuario}`);
           Swal.fire('Eliminado', 'El usuario ha sido eliminado.', 'success');
           fetchUsuarios();
         } catch (error) {
@@ -76,7 +77,10 @@ const Usuarios = () => {
       html:
         `<input id="swal-nombre" class="swal2-input" placeholder="Nombre">` +
         `<input id="swal-correo" class="swal2-input" placeholder="Correo Electrónico">` +
-        `<input id="swal-password" type="password" class="swal2-input" placeholder="Contraseña">`,
+        `<input id="swal-password" type="password" class="swal2-input" placeholder="Contraseña">` +
+        `<input id="swal-telefono" class="swal2-input" placeholder="Teléfono (opcional)">` +
+        `<input id="swal-direccion" class="swal2-input" placeholder="Dirección (opcional)">` +
+        `<input id="swal-ocupacion" class="swal2-input" placeholder="Ocupación (opcional)">`,
       focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
@@ -84,6 +88,9 @@ const Usuarios = () => {
           nom_usuario: (document.getElementById('swal-nombre') as HTMLInputElement).value,
           correo_usuario: (document.getElementById('swal-correo') as HTMLInputElement).value,
           pass_usuario: (document.getElementById('swal-password') as HTMLInputElement).value,
+          telefono: (document.getElementById('swal-telefono') as HTMLInputElement).value || null,
+          direccion: (document.getElementById('swal-direccion') as HTMLInputElement).value || null,
+          ocupacion: (document.getElementById('swal-ocupacion') as HTMLInputElement).value || null,
           rol_usuario: 'usuario',
           estado_usuario: 'activo',
         };
@@ -92,7 +99,7 @@ const Usuarios = () => {
 
     if (formValues) {
       try {
-        await axios.post('https://api.alexisandresuriel.com/usuarios', formValues);
+        await axios.post(`${API_URL}/usuarios`, formValues);
         Swal.fire('Éxito', 'Usuario añadido correctamente', 'success');
         fetchUsuarios();
       } catch (error) {
@@ -106,13 +113,19 @@ const Usuarios = () => {
       title: 'Editar Usuario',
       html:
         `<input id="swal-nombre" class="swal2-input" value="${usuario.nom_usuario}" placeholder="Nombre">` +
-        `<input id="swal-correo" class="swal2-input" value="${usuario.correo_usuario}" placeholder="Correo Electrónico">`,
+        `<input id="swal-correo" class="swal2-input" value="${usuario.correo_usuario}" placeholder="Correo Electrónico">` +
+        `<input id="swal-telefono" class="swal2-input" value="${usuario.telefono || ''}" placeholder="Teléfono (opcional)">` +
+        `<input id="swal-direccion" class="swal2-input" value="${usuario.direccion || ''}" placeholder="Dirección (opcional)">` +
+        `<input id="swal-ocupacion" class="swal2-input" value="${usuario.ocupacion || ''}" placeholder="Ocupación (opcional)">`,
       focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
         return {
           nom_usuario: (document.getElementById('swal-nombre') as HTMLInputElement).value,
           correo_usuario: (document.getElementById('swal-correo') as HTMLInputElement).value,
+          telefono: (document.getElementById('swal-telefono') as HTMLInputElement).value || null,
+          direccion: (document.getElementById('swal-direccion') as HTMLInputElement).value || null,
+          ocupacion: (document.getElementById('swal-ocupacion') as HTMLInputElement).value || null,
           rol_usuario: usuario.rol_usuario,
           estado_usuario: usuario.estado_usuario,
         };
@@ -121,7 +134,7 @@ const Usuarios = () => {
 
     if (formValues) {
       try {
-        await axios.put(`https://api.alexisandresuriel.com/usuarios/${usuario.id_usuario}`, formValues);
+        await axios.put(`${API_URL}/usuarios/${usuario.id_usuario}`, formValues);
         Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
         fetchUsuarios();
       } catch (error) {
@@ -180,6 +193,9 @@ const Usuarios = () => {
                   <th>ID</th>
                   <th>Nombre</th>
                   <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>Dirección</th>
+                  <th>Ocupación</th>
                   <th>Rol</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -192,6 +208,9 @@ const Usuarios = () => {
                       <td>{usuario.id_usuario}</td>
                       <td>{usuario.nom_usuario}</td>
                       <td>{usuario.correo_usuario}</td>
+                      <td>{usuario.telefono || '-'}</td>
+                      <td>{usuario.direccion || '-'}</td>
+                      <td>{usuario.ocupacion || '-'}</td>
                       <td>{usuario.rol_usuario}</td>
                       <td>{usuario.estado_usuario}</td>
                       <td className="flex justify-center gap-2 py-2">
@@ -212,7 +231,7 @@ const Usuarios = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-gray-500">
+                    <td colSpan={9} className="py-6 text-center text-gray-500">
                       No se encontraron usuarios.
                     </td>
                   </tr>

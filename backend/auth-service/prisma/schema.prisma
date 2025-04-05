@@ -14,16 +14,21 @@ datasource db {
 }
 
 model Usuario {
-  id_usuario    Int    @id @default(autoincrement())
-  nom_usuario   String @unique
-  correo_usuario String @unique
-  pass_usuario   String
-  rol_usuario    String
-  estado_usuario String
+  id_usuario       Int       @id @default(autoincrement())
+  nom_usuario      String    @unique
+  correo_usuario   String    @unique
+  pass_usuario     String
+  rol_usuario      String
+  estado_usuario   String
 
-  sesiones       Sesion[]
-  notificaciones Notificacion[]
-  reportes       Reporte[]
+  telefono         String?   // Nuevo campo opcional
+  direccion        String?   // Nuevo campo opcional
+  ocupacion        String?   // Nuevo campo opcional
+  fecha_registro   DateTime  @default(now()) // Se asigna automáticamente al crear el usuario
+
+  sesiones         Sesion[]
+  notificaciones   Notificacion[]
+  reportes         Reporte[]
 }
 
 model Sesion {

@@ -16,10 +16,19 @@ app.use(cors());
 app.post("/register", async (req, res) => {
     console.log("Datos recibidos:", req.body); 
     
-    const { nom_usuario, correo_usuario, pass_usuario, rol_usuario, estado_usuario } = req.body;
+    const {
+      nom_usuario,
+      correo_usuario,
+      pass_usuario,
+      rol_usuario,
+      estado_usuario,
+      telefono,
+      direccion,
+      ocupacion,
+    } = req.body;
 
     if (!nom_usuario || !correo_usuario || !pass_usuario || !rol_usuario || !estado_usuario) {
-      return res.status(400).json({ error: "Todos los campos son obligatorios" });
+      return res.status(400).json({ error: "Todos los campos obligatorios deben ser completados" });
     }
 
     try {
@@ -32,6 +41,9 @@ app.post("/register", async (req, res) => {
           pass_usuario: hashedPassword,
           rol_usuario,
           estado_usuario,
+          telefono,
+          direccion,
+          ocupacion,
         },
       });
 
@@ -41,7 +53,7 @@ app.post("/register", async (req, res) => {
     }
 });
 
-// ✅ Inicio de Sesión de Usuario
+// ✅ Login de Usuario
 app.post("/login", async (req, res) => {
   const { correo_usuario, pass_usuario } = req.body;
 
@@ -50,11 +62,9 @@ app.post("/login", async (req, res) => {
 
     if (!user) return res.status(401).json({ error: "Usuario no encontrado" });
 
-    // Comparar contraseña
     const validPassword = await bcrypt.compare(pass_usuario, user.pass_usuario);
     if (!validPassword) return res.status(401).json({ error: "Contraseña incorrecta" });
 
-    // Generar token JWT incluyendo el rol del usuario
     const token = jwt.sign(
       { id: user.id_usuario, rol_usuario: user.rol_usuario }, 
       "secreto_super_seguro", 
@@ -64,8 +74,8 @@ app.post("/login", async (req, res) => {
     res.json({
       message: "Login exitoso",
       token,
-      rol_usuario: user.rol_usuario, 
-      nom_usuario: user.nom_usuario 
+      rol_usuario: user.rol_usuario,
+      nom_usuario: user.nom_usuario
     });
 
   } catch (error) {
@@ -73,7 +83,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Obtener Perfil de Usuario
+// ✅ Obtener perfil de usuario autenticado
 app.get("/profile", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -84,7 +94,17 @@ app.get("/profile", async (req, res) => {
 
     const user = await prisma.usuario.findUnique({
       where: { id_usuario: decoded.id },
-      select: { id_usuario: true, nom_usuario: true, correo_usuario: true, rol_usuario: true }
+      select: {
+        id_usuario: true,
+        nom_usuario: true,
+        correo_usuario: true,
+        rol_usuario: true,
+        estado_usuario: true,
+        telefono: true,
+        direccion: true,
+        ocupacion: true,
+        fecha_registro: true,
+      },
     });
 
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
@@ -95,11 +115,7 @@ app.get("/profile", async (req, res) => {
   }
 });
 
-// ===============================================
-// ✅ CRUD DE USUARIOS
-// ===============================================
-
-// ➜ Obtener todos los usuarios
+// ✅ Obtener todos los usuarios
 app.get("/usuarios", async (req, res) => {
   try {
     const usuarios = await prisma.usuario.findMany();
@@ -109,12 +125,21 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// ➜ Crear un usuario
+// ✅ Crear un usuario (CRUD)
 app.post("/usuarios", async (req, res) => {
-  const { nom_usuario, correo_usuario, pass_usuario, rol_usuario, estado_usuario } = req.body;
+  const {
+    nom_usuario,
+    correo_usuario,
+    pass_usuario,
+    rol_usuario,
+    estado_usuario,
+    telefono,
+    direccion,
+    ocupacion,
+  } = req.body;
 
   if (!nom_usuario || !correo_usuario || !pass_usuario || !rol_usuario || !estado_usuario) {
-    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    return res.status(400).json({ error: "Todos los campos obligatorios deben ser completados" });
   }
 
   try {
@@ -127,19 +152,30 @@ app.post("/usuarios", async (req, res) => {
         pass_usuario: hashedPassword,
         rol_usuario,
         estado_usuario,
+        telefono,
+        direccion,
+        ocupacion,
       },
     });
 
     res.json({ message: "Usuario creado exitosamente", usuario: newUser });
   } catch (error) {
-    res.status(400).json({ error: "Error al registrar usuario", details: error.message });
+    res.status(400).json({ error: "Error al crear usuario", details: error.message });
   }
 });
 
-// ➜ Editar un usuario
+// ✅ Editar un usuario
 app.put("/usuarios/:id", async (req, res) => {
   const { id } = req.params;
-  const { nom_usuario, correo_usuario, rol_usuario, estado_usuario } = req.body;
+  const {
+    nom_usuario,
+    correo_usuario,
+    rol_usuario,
+    estado_usuario,
+    telefono,
+    direccion,
+    ocupacion,
+  } = req.body;
 
   try {
     const updatedUser = await prisma.usuario.update({
@@ -149,16 +185,19 @@ app.put("/usuarios/:id", async (req, res) => {
         correo_usuario,
         rol_usuario,
         estado_usuario,
+        telefono,
+        direccion,
+        ocupacion,
       },
     });
 
-    res.json({ message: "Usuario actualizado", usuario: updatedUser });
+    res.json({ message: "Usuario actualizado exitosamente", usuario: updatedUser });
   } catch (error) {
     res.status(400).json({ error: "Error al actualizar usuario", details: error.message });
   }
 });
 
-// ➜ Eliminar un usuario
+// ✅ Eliminar un usuario
 app.delete("/usuarios/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -170,7 +209,5 @@ app.delete("/usuarios/:id", async (req, res) => {
   }
 });
 
-// ===============================================
-// ✅ Iniciar el servidor
-// ===============================================
+// ✅ Iniciar servidor
 app.listen(5000, () => console.log("Servidor corriendo en http://localhost:5000"));
