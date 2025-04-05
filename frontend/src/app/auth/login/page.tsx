@@ -95,11 +95,6 @@ const Login = () => {
               Iniciar sesión
             </button>
 
-            {/* Botón de inicio de sesión con Google */}
-            <button type="button" className="google-login-button">
-              <img src="/google-icon.svg" alt="Google" className="google-icon" />
-              Iniciar sesión con Google
-            </button>
           </form>
 
           <p className="form-footer">
